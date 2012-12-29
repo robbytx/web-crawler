@@ -16,7 +16,7 @@ HtmlSrcAttrRegex = \
 
 class Page(object):
 	'''
-	Page in a website.
+	Page of a website.
 	'''
 	def __init__(self, domain, url, content):
 		super(Page, self).__init__()
