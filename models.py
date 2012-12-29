@@ -8,10 +8,10 @@ import errors
 
 # regex
 HtmlTitleTagRegex = re.compile(r'<title>(?P<title>.+)</title>', re.IGNORECASE)
-HtmlHrefAttrRegex = \
-	re.compile(r'<(?P<tag>[a-z]+).*href="(?P<href>[^ ]+)".*>', re.IGNORECASE)
-HtmlSrcAttrRegex = \
-	re.compile(r'<(?P<tag>[a-z]+).*src="(?P<src>[^ ]+)".*>', re.IGNORECASE)
+HtmlHrefAttrRegex = re.compile( \
+			r'<(?P<tag>[a-z]+)[^<]*href="(?P<href>[^ ]+)".*>', re.IGNORECASE)
+HtmlSrcAttrRegex = re.compile( \
+			r'<(?P<tag>[a-z]+)[^<]*src="(?P<src>[^ ]+)".*>', re.IGNORECASE)
 
 
 class Page(object):
