@@ -1,4 +1,5 @@
 from collections import deque
+from copy import copy
 import re
 from urlparse import urlsplit, urlunsplit, urljoin
 
@@ -34,17 +35,20 @@ class Page(object):
 		for match in HtmlSrcAttrRegex.finditer(content):
 			self.__assets.append(match.group('src').strip().lower())
 		
-		self.__links_to = []
+		self.__internal_links = []
+		self.__external_links = []
 		domain_netloc = urlsplit(domain)[1]
 		for match in HtmlHrefAttrRegex.finditer(content):
 			href = match.group('href').lower()
 			
 			scheme, netloc, path, _, _ = urlsplit(href)
-			# ignore external URLs
+			# external URLs
 			if len(netloc) > 0 and netloc != domain_netloc:
+				self.__external_links.append( \
+								urlunsplit((scheme, netloc, path, '', '')))
 				continue
 			
-			# filter out URLs
+			# filter out useless URLs
 			if scheme in ('mailto', 'tel', 'javascript'):
 				continue
 			
@@ -56,12 +60,13 @@ class Page(object):
 			
 			if match.group('tag').lower() == 'a':
 				# TODO: need to check resource type, e.g. pdf, zip, webpage
-				self.__links_to.append(href)
+				self.__internal_links.append(href)
 			else:
 				self.__assets.append(href)
 		
-		self.__assets = frozenset(self.__assets)
-		self.__links_to = frozenset(self.__links_to)
+		self.__assets = tuple(set(self.__assets))
+		self.__internal_links = tuple(set(self.__internal_links))
+		self.__external_links = tuple(set(self.__external_links))
 	
 	@property
 	def title(self):
@@ -73,11 +78,19 @@ class Page(object):
 	
 	@property
 	def assets(self):
-		return tuple(self.__assets)
+		return copy(self.__assets)
 	
 	@property
-	def links_to(self):
-		return tuple(self.__links_to)
+	def links(self):
+		return copy(self.__internal_links + self.__external_links)
+	
+	@property
+	def internal_links(self):
+		return copy(self.__internal_links)
+	
+	@property
+	def external_links(self):
+		return copy(self.__external_links)
 
 
 class Sitemap(object):
@@ -110,7 +123,7 @@ class Sitemap(object):
 				s.append('\t\tNone.\n')
 			
 			s.append('\t   Links:\n')
-			links = page.links_to
+			links = page.links
 			if len(links) > 0:
 				for link in links:
 					s.append('\t\t%s\n' % link)
@@ -139,11 +152,11 @@ class Sitemap(object):
 			try:			
 				page = self.__create_page_for(url, response.text)
 				
-				for link_to in page.links_to:
+				for link in page.internal_links:
 					try:
-						assert link_to not in self.__pages \
-							and link_to not in urls_to_check
-						urls_to_check.append(link_to)
+						assert link not in self.__pages \
+							and link not in urls_to_check
+						urls_to_check.append(link)
 					except AssertionError:
 						pass
 			except errors.PageExistsError:
