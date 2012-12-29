@@ -9,7 +9,8 @@ import errors
 
 
 # regex
-HtmlTitleTagRegex = re.compile(r'<title>(?P<title>.+)</title>', re.IGNORECASE)
+HtmlTitleTagRegex = re.compile(r'<title>(?P<title>.+)</title>', \
+							re.IGNORECASE | re.DOTALL)
 HtmlHrefAttrRegex = re.compile( \
 			r'<(?P<tag>[a-z]+)[^<]*href="(?P<href>[^ ]+)".*>', re.IGNORECASE)
 HtmlSrcAttrRegex = re.compile( \
