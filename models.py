@@ -38,13 +38,16 @@ class Page(object):
 		for match in HtmlHrefAttrRegex.finditer(content):
 			href = match.group('href').lower()
 			
-			_, netloc, path, query, fragment = urlsplit(href)
+			scheme, netloc, path, query, _ = urlsplit(href)
 			# ignore external URLs
 			if len(netloc) > 0 and netloc != domain_netloc:
 				continue
 			
-			href = urlunsplit(('', '', '/%s' % path.strip('/'), \
-							query, fragment))
+			# filter out URLs
+			if scheme in ('mailto', 'tel', 'javascript'):
+				continue
+			
+			href = urlunsplit(('', '', '/%s' % path.strip('/'), '', ''))
 			
 			# ignore links to self
 			if href == self.__url:
