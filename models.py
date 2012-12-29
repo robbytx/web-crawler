@@ -38,7 +38,7 @@ class Page(object):
 		for match in HtmlHrefAttrRegex.finditer(content):
 			href = match.group('href').lower()
 			
-			scheme, netloc, path, query, _ = urlsplit(href)
+			scheme, netloc, path, _, _ = urlsplit(href)
 			# ignore external URLs
 			if len(netloc) > 0 and netloc != domain_netloc:
 				continue
