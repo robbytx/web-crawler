@@ -69,11 +69,11 @@ class Page(object):
 	
 	@property
 	def assets(self):
-		return self.__assets
+		return tuple(self.__assets)
 	
 	@property
 	def links_to(self):
-		return self.__links_to
+		return tuple(self.__links_to)
 
 
 class Sitemap(object):
