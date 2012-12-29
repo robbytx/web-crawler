@@ -84,6 +84,8 @@ class Sitemap(object):
 		super(Sitemap, self).__init__()
 		
 		arr = urlsplit(domain)
+		if len(arr[0]) == 0:
+			raise TypeError('Domain name must include "http(s)://".')
 		self.__domain = '%s://%s' % (arr[0], arr[1])
 		self.__pages = {} # {url: Page}
 		
