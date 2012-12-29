@@ -128,7 +128,6 @@ class Sitemap(object):
 		while True:
 			try:
 				url = urls_to_check.pop()
-				print 'Checking %s' % url
 			except:
 				break
 			
