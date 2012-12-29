@@ -14,4 +14,7 @@ if __name__ == '__main__':
 #		raw_input('Enter the base URL you want to crawl (include "http://"): ')
 	domain = 'http://www.andreipetre.com/'
 	
-	print Sitemap(domain)
+	print 'Crawling %s ...' % domain
+	sitemap = Sitemap(domain)
+	print 'Done.'
+	print sitemap
