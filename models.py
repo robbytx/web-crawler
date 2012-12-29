@@ -148,7 +148,7 @@ class Sitemap(object):
 				
 				for link_to in page.links_to:
 					try:
-						assert not self.__has_url(link_to)
+						assert not self.__has_crawled_url(link_to)
 						urls_to_check.append(link_to)
 					except AssertionError:
 						pass
@@ -156,9 +156,7 @@ class Sitemap(object):
 				pass
 	
 	def __create_page_for(self, url, content):
-		try:
-			assert not self.__has_url(url)
-		except AssertionError:
+		if self.__has_crawled_url(url):
 			raise errors.PageExistsError()
 		
 		page = Page(self.domain, url, content)
@@ -166,5 +164,5 @@ class Sitemap(object):
 		
 		return page
 	
-	def __has_url(self, url):
+	def __has_crawled_url(self, url):
 		return url in self.pages
