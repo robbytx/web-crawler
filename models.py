@@ -141,10 +141,8 @@ class Sitemap(object):
 			except:
 				continue
 			
-			html = response.text
-			
 			try:			
-				page = self.__create_page_for(url, html)
+				page = self.__create_page_for(url, response.text)
 				
 				for link_to in page.links_to:
 					try:
