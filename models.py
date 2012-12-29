@@ -13,15 +13,6 @@ HtmlHrefAttrRegex = \
 HtmlSrcAttrRegex = \
 	re.compile(r'<(?P<tag>[a-z]+).*src="(?P<src>[^ ]+)".*>', re.IGNORECASE)
 
-#HtmlATagRegex = re.compile(r'<a.*href="(?P<url>[^ ]+)".*>', re.IGNORECASE)
-#HtmlLinkTagRegex = re.compile(r'<link.*href="(?P<url>[^ ]+)".*>', \
-#							re.IGNORECASE)
-#HtmlSrcAttrRegex = re.compile(r'<.*src="(?P<src>[^ ]+)".*>', re.IGNORECASE)
-
-# <a href="">
-# <link href="">
-# <script src="">
-# <img src="">
 
 class Page(object):
 	'''
