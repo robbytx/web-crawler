@@ -1,3 +1,4 @@
+from collections import deque
 import re
 from urlparse import urlsplit, urlunsplit, urljoin
 
@@ -95,9 +96,9 @@ class Sitemap(object):
 		self.__crawl()
 	
 	def __str__(self):
-		s = ['Sitemap for %s:\n' % self.domain]
+		s = ['Sitemap for %s:\n' % self.__domain]
 		
-		for page in self.pages.itervalues():
+		for page in self.__pages.itervalues():
 			s.append('\t-> %s (%s)\n' % (page.title, page.url))
 			
 			s.append('\t   Static assets:\n')
@@ -118,24 +119,16 @@ class Sitemap(object):
 		
 		return ''.join(s)
 	
-	@property
-	def domain(self):
-		return self.__domain
-	
-	@property
-	def pages(self):
-		return self.__pages
-	
 	def __crawl(self):
-		urls_to_check = ['/']
+		urls_to_check = deque(['/'])
 		while True:
 			try:
-				url = urls_to_check.pop()
+				url = urls_to_check.popleft()
 			except:
 				break
 			
 			response = requests.get( \
-							urljoin(self.domain, url, allow_fragments=True))
+						urljoin(self.__domain, url, allow_fragments=False))
 			try:
 				response.raise_for_status()
 				assert response.status_code == 200
@@ -148,7 +141,8 @@ class Sitemap(object):
 				
 				for link_to in page.links_to:
 					try:
-						assert not self.__has_crawled_url(link_to)
+						assert link_to not in self.__pages \
+							and link_to not in urls_to_check
 						urls_to_check.append(link_to)
 					except AssertionError:
 						pass
@@ -156,13 +150,10 @@ class Sitemap(object):
 				pass
 	
 	def __create_page_for(self, url, content):
-		if self.__has_crawled_url(url):
+		if url in self.__pages:
 			raise errors.PageExistsError()
 		
-		page = Page(self.domain, url, content)
-		self.pages[url] = page
+		page = Page(self.__domain, url, content)
+		self.__pages[url] = page
 		
 		return page
-	
-	def __has_crawled_url(self, url):
-		return url in self.pages
