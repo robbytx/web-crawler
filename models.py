@@ -12,9 +12,9 @@ import errors
 HtmlTitleTagRegex = re.compile(r'<title>(?P<title>.+)</title>', \
 							re.IGNORECASE | re.DOTALL)
 HtmlHrefAttrRegex = re.compile( \
-			r'<(?P<tag>[a-z]+)[^<]*href="(?P<href>[^ ]+)".*>', re.IGNORECASE)
+			r'<(?P<tag>[a-z]+)[^<]*href="(?P<href>[^ ]+)"[^>]*>(?P<text>[^<]*)', re.IGNORECASE)
 HtmlSrcAttrRegex = re.compile( \
-			r'<(?P<tag>[a-z]+)[^<]*src="(?P<src>[^ ]+)".*>', re.IGNORECASE)
+			r'<(?P<tag>[a-z]+)[^<]*src="(?P<src>[^ ]+)"[^>]*>', re.IGNORECASE)
 
 
 class Page(object):
@@ -49,12 +49,13 @@ class Page(object):
 		domain_netloc = urlsplit(domain)[1]
 		for match in HtmlHrefAttrRegex.finditer(content):
 			href = match.group('href').lower()
-			
+			text = match.group('text')
+
 			scheme, netloc, path, _, _ = urlsplit(href)
 			# check for external URLs
 			if len(netloc) > 0 and netloc != domain_netloc:
 				self.__external_links.append( \
-								urlunsplit((scheme, netloc, path, '', '')))
+					(urlunsplit((scheme, netloc, path, '', '')), text))
 				continue
 			
 			# filter out useless URLs
@@ -69,7 +70,7 @@ class Page(object):
 				continue
 			
 			if match.group('tag').lower() == 'a':
-				self.__internal_links.append(href)
+				self.__internal_links.append((href, text))
 			else:
 				self.__assets.append(href)
 		
@@ -157,27 +158,27 @@ class Sitemap(object):
 		
 		@return: (str).
 		'''
-		s = ['Sitemap for %s:\n' % self.__domain]
+		s = ['Sitemap for %s:\n' % self.__domain.encode('utf-8')]
 		
 		for page in self.__pages.itervalues():
-			s.append('\t-> %s (%s)\n' % (page.title, page.url))
+			s.append('\t-> %s (%s)\n' % (page.title.encode('utf-8'), page.url.encode('utf-8')))
 			
 			s.append('\t   Static assets:\n')
 			assets = page.assets
 			if len(assets) > 0:
-				for asset in page.assets:
-					s.append('\t\t%s\n' % asset)
+				for asset in assets:
+					s.append('\t\t%s\n' % asset.encode('utf-8'))
 			else:
 				s.append('\t\tNone.\n')
 			
 			s.append('\t   Links:\n')
 			links = page.links
 			if len(links) > 0:
-				for link in links:
-					s.append('\t\t%s\n' % link)
+				for (link, text) in sorted(links):
+					s.append('\t\t%s - %s\n' % (link.encode('utf-8'), text.encode('utf-8')))
 			else:
 				s.append('\t\tNone.\n')
-		
+
 		return ''.join(s)
 	
 	def __crawl(self):
@@ -201,10 +202,10 @@ class Sitemap(object):
 			except:
 				continue
 			
-			try:			
+			try:
 				page = self.__create_page_for(url, response.text)
 				
-				for link in page.internal_links:
+				for (link, text) in page.internal_links:
 					try:
 						# ignore URLs already crawled or already in queue
 						assert link not in self.__pages \
