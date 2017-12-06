@@ -15,6 +15,8 @@ HtmlHrefAttrRegex = re.compile( \
             r'<(?P<tag>[a-z]+)[^<]*href="(?P<href>[^ ]+)"[^>]*>(?P<text>[^<]*)', re.IGNORECASE)
 HtmlSrcAttrRegex = re.compile( \
             r'<(?P<tag>[a-z]+)[^<]*src="(?P<src>[^ ]+)"[^>]*>', re.IGNORECASE)
+HtmlActionAttrRegex = re.compile( \
+            r'<(?P<tag>[a-z]+)[^<]*(?:form)?action="(?P<action>[^ ]+)"[^>]*>', re.IGNORECASE)
 
 
 class Page(object):
@@ -43,6 +45,11 @@ class Page(object):
         for match in HtmlSrcAttrRegex.finditer(content):
             self.__assets.append(match.group('src').strip().lower())
         
+        # find form actions
+        self.__actions = []
+        for match in HtmlActionAttrRegex.finditer(content):
+            self.__actions.append(match.group('action').strip().lower())
+
         # find links
         self.__internal_links = []
         self.__external_links = []
@@ -76,6 +83,7 @@ class Page(object):
         
         # remove duplicates & make read-only
         self.__assets = tuple(set(self.__assets))
+        self.__actions = tuple(set(self.__actions))
         self.__internal_links = tuple(set(self.__internal_links))
         self.__external_links = tuple(set(self.__external_links))
     
@@ -106,6 +114,15 @@ class Page(object):
         '''
         return copy(self.__assets)
     
+    @property
+    def actions(self):
+        '''
+        Get the page's form actions.
+
+        @return: (tuple).
+        '''
+        return copy(self.__actions)
+
     @property
     def links(self):
         '''
@@ -170,7 +187,15 @@ class Sitemap(object):
                     s.append('\t\t%s\n' % asset.encode('utf-8'))
             else:
                 s.append('\t\tNone.\n')
-            
+
+            s.append('\t   Form actions:\n')
+            actions = page.actions
+            if len(actions) > 0:
+                for action in actions:
+                    s.append('\t\t%s\n' % action.encode('utf-8'))
+            else:
+                s.append('\t\tNone.\n')
+
             s.append('\t   Links:\n')
             links = page.links
             if len(links) > 0:
