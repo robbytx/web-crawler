@@ -10,10 +10,10 @@ from models import Sitemap
 
 
 if __name__ == '__main__':
-	domain = \
-		raw_input('Enter the base URL you want to crawl (include "http://"): ')
-	
-	print 'Crawling %s ...' % domain
-	sitemap = Sitemap(domain)
-	print 'Done.'
-	print sitemap
+    domain = \
+        raw_input('Enter the base URL you want to crawl (include "http://"): ')
+    
+    print 'Crawling %s ...' % domain
+    sitemap = Sitemap(domain)
+    print 'Done.'
+    print sitemap
