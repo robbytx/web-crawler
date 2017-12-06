@@ -71,7 +71,7 @@ class Page(object):
                 continue
             
             # create absolute path ignoring query & fragment parameters
-            href = urlunsplit(('', '', '/%s' % path.strip('/'), '', ''))
+            href = urlunsplit(('', '', '/%s' % path.lstrip('/'), '', ''))
             
             # ignore links to self
             if href == self.__url:
