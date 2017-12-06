@@ -1,4 +1,4 @@
-from collections import deque
+from collections import deque, OrderedDict
 from copy import copy
 import re
 from urlparse import urlsplit, urlunsplit, urljoin
@@ -98,11 +98,11 @@ class Page(object):
                 self.__other_links.append((href, match.group('rel')))
 
         # remove duplicates & make read-only
-        self.__assets = tuple(set(self.__assets))
-        self.__actions = tuple(set(self.__actions))
-        self.__internal_links = tuple(set(self.__internal_links))
-        self.__external_links = tuple(set(self.__external_links))
-        self.__other_links = tuple(set(self.__other_links))
+        self.__assets = tuple(OrderedDict.fromkeys(self.__assets).keys())
+        self.__actions = tuple(OrderedDict.fromkeys(self.__actions).keys())
+        self.__internal_links = tuple(OrderedDict.fromkeys(self.__internal_links).keys())
+        self.__external_links = tuple(OrderedDict.fromkeys(self.__external_links).keys())
+        self.__other_links = tuple(OrderedDict.fromkeys(self.__other_links).keys())
 
     @property
     def title(self):
@@ -191,7 +191,7 @@ class Sitemap(object):
         if len(arr[0]) == 0:
             raise TypeError('Domain name must include "http(s)://".')
         self.__domain = '%s://%s' % (arr[0], arr[1])
-        self.__pages = {} # {url: Page}
+        self.__pages = OrderedDict() # {url: Page}
         
         self.__crawl()
     
