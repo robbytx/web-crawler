@@ -4,6 +4,7 @@ import re
 from urlparse import urlsplit, urlunsplit, urljoin
 
 import requests
+import logging
 
 import errors
 
@@ -12,11 +13,11 @@ import errors
 HtmlTitleTagRegex = re.compile(r'<title>(?P<title>.+)</title>', \
                             re.IGNORECASE | re.DOTALL)
 HtmlHrefAttrRegex = re.compile( \
-            r'<(?P<tag>[a-z]+)[^<]*href="(?P<href>[^ ]+)"[^>]*>(?P<text>[^<]*)', re.IGNORECASE)
+            r'<(?P<tag>[a-z]+)[^<]*href=[\'"](?P<href>[^\'"]+)[\'"][^>]*>(?P<text>[^<]*)', re.IGNORECASE)
 HtmlSrcAttrRegex = re.compile( \
-            r'<(?P<tag>[a-z]+)[^<]*src="(?P<src>[^ ]+)"[^>]*>', re.IGNORECASE)
+            r'<(?P<tag>[a-z]+)[^<]*src=[\'"](?P<src>[^\'"]+)[\'"][^>]*>', re.IGNORECASE)
 HtmlActionAttrRegex = re.compile( \
-            r'<(?P<tag>[a-z]+)[^<]*(?:form)?action="(?P<action>[^ ]+)"[^>]*>', re.IGNORECASE)
+            r'<(?P<tag>[a-z]+)[^<]*(?:form)?action=[\'"](?P<action>[^\'"]+)[\'"][^>]*>', re.IGNORECASE)
 
 
 class Page(object):
@@ -225,6 +226,7 @@ class Sitemap(object):
                 # only crawl HTML pages
                 assert 'html' in response.headers.get('content-type') 
             except:
+                logging.exception("Error getting %s", url)
                 continue
             
             try:
