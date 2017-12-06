@@ -44,12 +44,12 @@ class Page(object):
         # find assets
         self.__assets = []
         for match in HtmlSrcAttrRegex.finditer(content):
-            self.__assets.append(match.group('src').strip().lower())
+            self.__assets.append(match.group('src').strip())
         
         # find form actions
         self.__actions = []
         for match in HtmlActionAttrRegex.finditer(content):
-            self.__actions.append(match.group('action').strip().lower())
+            self.__actions.append(match.group('action').strip())
 
         # find links
         self.__internal_links = []
@@ -57,7 +57,7 @@ class Page(object):
         self.__other_links = []
         domain_netloc = urlsplit(domain)[1]
         for match in HtmlHrefAttrRegex.finditer(content):
-            href = match.group('href').lower()
+            href = match.group('href')
             text = match.group('text')
 
             # filter out in-page references
