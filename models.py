@@ -59,6 +59,10 @@ class Page(object):
             href = match.group('href').lower()
             text = match.group('text')
 
+            # filter out in-page references
+            if len(href) == 0 or href[0] == '#':
+                continue
+
             scheme, netloc, path, _, _ = urlsplit(href)
             # check for external URLs
             if len(netloc) > 0 and netloc != domain_netloc:
@@ -67,9 +71,12 @@ class Page(object):
                 continue
             
             # filter out useless URLs
-            if scheme in ('mailto', 'tel', 'javascript'):
+            if scheme in ('mailto', 'tel', 'javascript') or len(path) == 0:
                 continue
-            
+
+            if path[0] != '/':
+                logging.warn("Unsupported relative path (%s) at %s", path, url)
+
             # create absolute path ignoring query & fragment parameters
             href = urlunsplit(('', '', '/%s' % path.lstrip('/'), '', ''))
             
