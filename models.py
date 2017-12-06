@@ -13,7 +13,7 @@ import errors
 HtmlTitleTagRegex = re.compile(r'<title>(?P<title>.+)</title>', \
                             re.IGNORECASE | re.DOTALL)
 HtmlHrefAttrRegex = re.compile( \
-            r'<(?P<tag>[a-z]+)[^<]*href=[\'"](?P<href>[^\'"]+)[\'"][^>]*>(?:<span [^>]*>(?:</span>)?)*(?P<text>[^<]*)', re.IGNORECASE)
+            r'<(?P<tag>[a-z]+)(?: rel=[\'"](?P<rel>[^\'"]+)[\'"])?[^<]*href=[\'"](?P<href>[^\'"]+)[\'"][^>]*>(?:<span [^>]*>(?:</span>)?)*(?P<text>[^<]*)', re.IGNORECASE)
 HtmlSrcAttrRegex = re.compile( \
             r'<(?P<tag>[a-z]+)[^<]*src=[\'"](?P<src>[^\'"]+)[\'"][^>]*>', re.IGNORECASE)
 HtmlActionAttrRegex = re.compile( \
@@ -54,6 +54,7 @@ class Page(object):
         # find links
         self.__internal_links = []
         self.__external_links = []
+        self.__other_links = []
         domain_netloc = urlsplit(domain)[1]
         for match in HtmlHrefAttrRegex.finditer(content):
             href = match.group('href').lower()
@@ -66,8 +67,13 @@ class Page(object):
             scheme, netloc, path, _, _ = urlsplit(href)
             # check for external URLs
             if len(netloc) > 0 and netloc != domain_netloc:
-                self.__external_links.append( \
-                    (urlunsplit((scheme, netloc, path, '', '')), text))
+                href = urlunsplit((scheme, netloc, path, '', ''))
+                if match.group('tag').lower() == 'a':
+                    self.__external_links.append((href, text))
+                elif match.group('tag').lower() == 'link' and match.group('rel').lower() == 'stylesheet':
+                    self.__assets.append(href)
+                else:
+                    self.__other_links.append((href, match.group('rel')))
                 continue
             
             # filter out useless URLs
@@ -86,15 +92,18 @@ class Page(object):
             
             if match.group('tag').lower() == 'a':
                 self.__internal_links.append((href, text))
-            else:
+            elif match.group('tag').lower() == 'link' and match.group('rel').lower() == 'stylesheet':
                 self.__assets.append(href)
-        
+            else:
+                self.__other_links.append((href, match.group('rel')))
+
         # remove duplicates & make read-only
         self.__assets = tuple(set(self.__assets))
         self.__actions = tuple(set(self.__actions))
         self.__internal_links = tuple(set(self.__internal_links))
         self.__external_links = tuple(set(self.__external_links))
-    
+        self.__other_links = tuple(set(self.__other_links))
+
     @property
     def title(self):
         '''
@@ -158,6 +167,15 @@ class Page(object):
         '''
         return copy(self.__external_links)
 
+    @property
+    def other_links(self):
+        '''
+        Get the page's other (non-<a>) links.
+
+        @return: (tuple).
+        '''
+        return copy(self.__other_links)
+
 
 class Sitemap(object):
     '''
@@ -196,14 +214,6 @@ class Sitemap(object):
             else:
                 s.append('\t\tNone.\n')
 
-            s.append('\t   Form actions:\n')
-            actions = page.actions
-            if len(actions) > 0:
-                for action in actions:
-                    s.append('\t\t%s\n' % action.encode('utf-8'))
-            else:
-                s.append('\t\tNone.\n')
-
             s.append('\t   Links:\n')
             links = page.links
             if len(links) > 0:
@@ -211,6 +221,21 @@ class Sitemap(object):
                     s.append('\t\t%s - %s\n' % (link.encode('utf-8'), text.encode('utf-8')))
             else:
                 s.append('\t\tNone.\n')
+
+            actions = page.actions
+            if len(actions) > 0:
+                s.append('\t   Form actions:\n')
+                for action in actions:
+                    s.append('\t\t%s\n' % action.encode('utf-8'))
+
+            other_links = page.other_links
+            if len(other_links) > 0:
+                s.append('\t   Other links:\n')
+                for (link,rel) in other_links:
+                    if rel is None:
+                        s.append('\t\t%s\n' % link.encode('utf-8'))
+                    else:
+                        s.append('\t\t[rel=%s] %s\n' % (rel.encode('utf-8'), link.encode('utf-8')))
 
         return ''.join(s)
     
