@@ -13,11 +13,11 @@ import errors
 HtmlTitleTagRegex = re.compile(r'<title>(?P<title>.+)</title>', \
                             re.IGNORECASE | re.DOTALL)
 HtmlHrefAttrRegex = re.compile( \
-            r'<(?P<tag>[a-z]+)(?: rel=[\'"](?P<rel>[^\'"]+)[\'"])?[^<]*href=[\'"](?P<href>[^\'"]+)[\'"][^>]*>(?:<span [^>]*>(?:</span>)?)*(?P<text>[^<]*)', re.IGNORECASE)
+            r'<(?P<tag>[a-z]+)(?: rel=[\'"](?P<rel>[^\'"]+)[\'"])?[^<]* href=[\'"](?P<href>[^\'"]+)[\'"][^>]*>(?:<span [^>]*>(?:</span>)?)*(?P<text>[^<]*)', re.IGNORECASE)
 HtmlSrcAttrRegex = re.compile( \
-            r'<(?P<tag>[a-z]+)[^<]*src=[\'"](?P<src>[^\'"]+)[\'"][^>]*>', re.IGNORECASE)
+            r'<(?P<tag>[a-z]+)[^<]* src=[\'"](?P<src>[^\'"]+)[\'"][^>]*>', re.IGNORECASE)
 HtmlActionAttrRegex = re.compile( \
-            r'<(?P<tag>[a-z]+)[^<]*(?:form)?action=[\'"](?P<action>[^\'"]+)[\'"][^>]*>', re.IGNORECASE)
+            r'<(?P<tag>[a-z]+)[^<]* (?:form)?action=[\'"](?P<action>[^\'"]+)[\'"][^>]*>', re.IGNORECASE)
 
 
 class Page(object):
