@@ -255,6 +255,8 @@ class Sitemap(object):
             try:
                 response.raise_for_status()
                 assert response.status_code == 200
+                if 'video' in response.headers.get('content-type'):
+                    continue
                 # only crawl HTML pages
                 assert 'html' in response.headers.get('content-type') 
             except:
